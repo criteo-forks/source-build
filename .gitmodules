@@ -1,14 +1,14 @@
 [submodule "src/coreclr"]
 	path = src/coreclr
-	url = https://github.com/dotnet/coreclr
-	branch = release/2.0.0
+	url = https://github.com/criteo-forks/coreclr.git
+	branch = v2.1.5-criteo 
 [submodule "src/roslyn"]
 	path = src/roslyn
 	url = https://github.com/dotnet/roslyn
 [submodule "src/core-setup"]
 	path = src/core-setup
-	url = https://github.com/dotnet/core-setup
-	branch = release/2.0.0
+	url = https://github.com/criteo-forks/core-setup.git
+	branch = v2.1.5-criteo 
 [submodule "src/standard"]
 	path = src/standard
 	url = https://github.com/dotnet/standard
