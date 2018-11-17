@@ -6,15 +6,10 @@ branches:
 image: Visual Studio 2017
 init:
 - git config --global core.autocrlf true
-- git submodule update --init src/coreclr
-- git submodule update --init src/corefx
-- git submodule update --init src/standard
-- git submodule update --init src/core-setup
-- git submodule update --init src/newtonsoft-json
 configuration:
 - Release
 environment:
   image_flag: 2017
-build_script: build.sh /p:RootRepo=core-setup
+build_script: criteo_build.cmd
 artifacts:
 - path: '**\*.nupkg'
