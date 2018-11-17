@@ -3,7 +3,7 @@ branches:
   only:
   - master
   - /.*-criteo.*/
-image: Visual Studio 2017
+image: Visual Studio 2015
 init:
 - git config --global core.autocrlf true
 configuration:
