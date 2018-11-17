@@ -11,5 +11,7 @@ configuration:
 environment:
   image_flag: 2017
 build_script: criteo_build.cmd
+on_failure:
+- ps: Get-ChildItem .\bin\logs\*.log | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name }
 artifacts:
 - path: '**\*.nupkg'
