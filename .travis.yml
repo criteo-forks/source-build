@@ -17,7 +17,7 @@ deploy:
   api_key:
     secure: mz9J1dL3Buc4ZNGAZLWgzvGpaMChOZXnuJDZVE+sz5t2z0+BYB/Hqfg9oFNi+okxdzwhDv6Ri5qqux+hh7zhzgQ3Cfwi3BAr6KwJvGITMG3/Tpk2wumRxC78fHDavOOy2Jz4cVkT8uNN43rKZ1qC/3yyyixsylFfkXJBlRjzXatoBjf4POn65WhXm5f6SF2o3CRAtnEWtYwd7ye/kVvAx1mfaz8u0T+JLf6iWBCgPKKvze8qc6F2eo82CY2/v9WNl9yCkgtvQUHH6CVK7rEp/JUh8dI6V1prhUFHRgLynQE7SJdBIxf5YRGQKuvOdHyr/Jin6x3e771tX2BBgQ0XBJqkzlx3gftnHtIKBvaUsPgG2bUyL3vImxfpoosw7DnbbmdTd/4Dg9PszJ2fQugvExq24bvTVnUotu4EjqJhfhj9e5WED+FlWCB0P/GplpZN22Vuw4CxcHTL3Fek7VB7zMGZIZ+vPRYzZML5HwXpmnRSIct1oFGW1+Z33RgU9cLUzKBl/uHAYGCKs8n/vAmIVj4uMF7rUAGKqQ7q9iWwmy7TH5rOqJyBHaZ9oBiEYSs99InNphvmcG1s0/Yt3nCMYyTpdNsEmdEtRXVcqgIOVkfbIHehTTAyIbVb0bepbIDcu+iQXPF1eGmM3+f9b4uK7vN8EWME4lc2TdIH1SO2dXw=
   file_glob: true  
-  file: bin/obj/x64/Release/blob-feed/assets/dotnet-runtime-*.tar.gz
+  file: bin/obj/x64/Debug/blob-feed/assets/dotnet-runtime-*.tar.gz
   skip_cleanup: true
   on:
     repo: criteo-forks/source-build
