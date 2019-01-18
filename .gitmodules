@@ -45,8 +45,8 @@
 	url = https://github.com/dotnet/cli-migrate
 [submodule "src/corefx"]
 	path = src/corefx
-	url = https://github.com/dotnet/corefx
-	branch = release/2.0.0
+	url = https://github.com/criteo-forks/corefx.git
+	branch = socket_threadpool
 [submodule "src/fsharp"]
 	path = src/fsharp
 	url = https://github.com/Microsoft/VisualFSharp
