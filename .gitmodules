@@ -46,7 +46,7 @@
 [submodule "src/corefx"]
 	path = src/corefx
 	url = https://github.com/criteo-forks/corefx.git
-	branch = socket_threadpool
+        branch = aes_3des_cfb_mode_implementation_unix
 [submodule "src/fsharp"]
 	path = src/fsharp
 	url = https://github.com/Microsoft/VisualFSharp
