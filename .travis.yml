@@ -10,7 +10,8 @@ before_install:
 - sudo service docker restart
 - sleep 5
 script:
-- travis_wait 60 ./criteo-build-centos7.sh
+- gem install octokit
+- travis_wait 60 ./criteo-build-centos7.sh $TRAVIS_BRANCH
 
 deploy:
   provider: releases
@@ -21,3 +22,6 @@ deploy:
   on:
     repo: criteo-forks/source-build
     tags: true
+
+before_deploy:
+    - ./generate_changelog_and_update_release.sh $TRAVIS_TAG $GITHUB_TOKEN 
