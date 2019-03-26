@@ -1,14 +1,14 @@
 [submodule "src/coreclr"]
 	path = src/coreclr
 	url = https://github.com/criteo-forks/coreclr
-	branch = v2.2.2-criteo
+	branch = v2.2.2-criteo2
 [submodule "src/roslyn"]
 	path = src/roslyn
 	url = https://github.com/dotnet/roslyn
 [submodule "src/core-setup"]
 	path = src/core-setup
-	url = https://github.com/criteo-forks/core-setup
-	branch = v2.2.2-criteo
+        url = https://github.com/dotnet/core-setup
+	branch = release/2.0.0
 [submodule "src/standard"]
 	path = src/standard
 	url = https://github.com/dotnet/standard
@@ -46,7 +46,7 @@
 [submodule "src/corefx"]
 	path = src/corefx
 	url = https://github.com/criteo-forks/corefx
-	branch = v2.2.2-criteo
+	branch = v2.2.2-criteo2
 [submodule "src/fsharp"]
 	path = src/fsharp
 	url = https://github.com/Microsoft/VisualFSharp
