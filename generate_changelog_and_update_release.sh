@@ -30,4 +30,4 @@ else
 fi
 
 echo "Create or update GitHub release for $branch_or_tag"
-ruby github_release.rb -s "$github_token" -r "criteo-forks/source-build" -c changelog -t "$branch_or_tag"
+#ruby github_release.rb -s "$github_token" -r "criteo-forks/source-build" -c changelog -t "$branch_or_tag"
