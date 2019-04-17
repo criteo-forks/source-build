@@ -1,7 +1,7 @@
 [submodule "src/coreclr"]
 	path = src/coreclr
 	url = https://github.com/criteo-forks/coreclr
-	branch = v2.2.2-criteo2
+	branch = v2.2.2-criteo3
 [submodule "src/roslyn"]
 	path = src/roslyn
 	url = https://github.com/dotnet/roslyn
