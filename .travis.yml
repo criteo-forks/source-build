@@ -10,7 +10,7 @@ before_install:
 - sudo service docker restart
 - sleep 5
 script:
-- travis_wait 60 ./criteo-build-centos7.sh
+- travis_wait 90 ./criteo-build-centos7.sh
 
 deploy:
   provider: releases
