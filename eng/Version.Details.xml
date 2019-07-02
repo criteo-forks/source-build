@@ -26,7 +26,7 @@
     </Dependency>
     <Dependency Name="Microsoft.Private.CoreFx.NETCoreApp" Version="4.6.0-preview6.19264.9">
       <Uri>https://github.com/criteo-forks/corefx</Uri>
-      <Sha>67fa374ecee96659aaeb28499c7f9f985540f3b4</Sha>
+      <Sha>e87b84ce95ff9a4c808d651afd1307201e79c77c</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App" Version="3.0.0-preview6-27804-01">
       <Uri>https://github.com/dotnet/core-setup</Uri>
