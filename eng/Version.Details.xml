@@ -16,7 +16,7 @@
       <Sha>15b5a5f682a3f3345f473b655d51940bdd8fd1a8</Sha>
       <RepoName>linker</RepoName>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.Runtime.CoreCLR" Version="3.0.0-preview6-27710-71">
+    <Dependency Name="Microsoft.NETCore.Runtime.CoreCLR" Version="3.0.0-preview6-27710-71-sockets">
       <Uri>https://github.com/dotnet/coreclr</Uri>
       <Sha>48431cc037776ca359de36bf71bda8c154cc2aa9</Sha>
     </Dependency>
@@ -25,8 +25,8 @@
       <Sha>034dbc3c88aa1663fbbc6a22a3563c8a2c99d604</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Private.CoreFx.NETCoreApp" Version="4.6.0-preview6.19264.9">
-      <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>a28176b5ec68b6da1472934fe9493790d1665cae</Sha>
+      <Uri>https://github.com/criteo-forks/corefx</Uri>
+      <Sha>67fa374ecee96659aaeb28499c7f9f985540f3b4</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App" Version="3.0.0-preview6-27804-01">
       <Uri>https://github.com/dotnet/core-setup</Uri>
