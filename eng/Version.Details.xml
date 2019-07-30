@@ -28,9 +28,9 @@
       <Uri>https://github.com/dotnet/standard</Uri>
       <Sha>a9422da6ed91b413019ef93051613c5f03801d64</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Private.CoreFx.NETCoreApp" Version="4.6.0-preview7.19352.8" CoherentParentDependency="Microsoft.NETCore.App">
-      <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>9c3c40ac8b4f9b56791bc3c18c540079dad8a812</Sha>
+    <Dependency Name="Microsoft.Private.CoreFx.NETCoreApp" Version="4.6.0-preview7.19352.8-sockets" CoherentParentDependency="Microsoft.NETCore.App">
+      <Uri>https://github.com/criteo-forks/corefx</Uri>
+      <Sha>e32ed365a216a3e09dbe2fb62630e020bbff2bca</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App" Version="3.0.0-preview7-27902-19" CoherentParentDependency="Microsoft.Dotnet.Sdk.Internal">
       <Uri>https://github.com/dotnet/core-setup</Uri>
