@@ -26,3 +26,7 @@ deploy:
 
 before_deploy:
     - ./generate_changelog_and_update_release.sh $TRAVIS_TAG $GITHUB_TOKEN 
+    
+after_failure:
+    - sleep 30;
+    - echo == End of log ==
