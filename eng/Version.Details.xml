@@ -37,7 +37,7 @@
     </Dependency>
     <Dependency Name="Microsoft.Private.CoreFx.NETCoreApp" Version="4.6.0-preview8.19405.3" CoherentParentDependency="Microsoft.NETCore.App">
       <Uri>https://github.com/criteo-forks/corefx</Uri>
-      <Sha>daccd2bcd0f9664ee04fdff9582496a62aac80e4</Sha>
+      <Sha>00a7bad55cd389faa33b0ecbede47c57b7396d0a</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App" Version="3.0.0-preview8-28405-07" CoherentParentDependency="Microsoft.Dotnet.Sdk.Internal">
       <Uri>https://github.com/dotnet/core-setup</Uri>

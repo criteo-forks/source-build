@@ -7,7 +7,7 @@ index 57159037..424f9475 100644
        to conform to Arcade defaults. https://github.com/dotnet/core-setup/issues/7348
      -->
 -    <PreReleaseVersionLabel>preview8</PreReleaseVersionLabel>
-+    <PreReleaseVersionLabel>preview8-criteo1</PreReleaseVersionLabel>
++    <PreReleaseVersionLabel>preview8-criteo2</PreReleaseVersionLabel>
      <!-- Enable to remove prerelease label. -->
      <StabilizePackageVersion Condition="'$(StabilizePackageVersion)' == ''">false</StabilizePackageVersion>
      <DotNetFinalVersionKind Condition="'$(StabilizePackageVersion)' == 'true'">release</DotNetFinalVersionKind>
