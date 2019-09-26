@@ -1,0 +1,13 @@
+diff --git a/eng/Versions.props b/eng/Versions.props
+index c22a616d..c86ab4d8 100644
+--- a/eng/Versions.props
++++ b/eng/Versions.props
+@@ -4,7 +4,7 @@
+     <MajorVersion>3</MajorVersion>
+     <MinorVersion>0</MinorVersion>
+     <PatchVersion>0</PatchVersion>
+-    <PreReleaseVersionLabel>rc1</PreReleaseVersionLabel>
++    <PreReleaseVersionLabel>criteo1</PreReleaseVersionLabel>
+     <!-- Enable to remove prerelease label. -->
+     <StabilizePackageVersion Condition="'$(StabilizePackageVersion)' == ''">false</StabilizePackageVersion>
+     <DotNetFinalVersionKind Condition="'$(StabilizePackageVersion)' == 'true'">release</DotNetFinalVersionKind>

@@ -28,16 +28,16 @@
       <RepoName>linker</RepoName>
     </Dependency>
     <Dependency Name="Microsoft.NETCore.Runtime.CoreCLR" Version="3.0.0-rc1.19455.6" CoherentParentDependency="Microsoft.Private.CoreFx.NETCoreApp">
-      <Uri>https://github.com/dotnet/coreclr</Uri>
-      <Sha>aed84886b8d777168f53fae4da15c7af5f7572da</Sha>
+      <Uri>https://github.com/criteo-forks/coreclr</Uri>
+      <Sha>8388445de41e244d01e94d013e6c7159a6e47838</Sha>
     </Dependency>
     <Dependency Name="NETStandard.Library" Version="2.1.0-prerelease.19455.3" CoherentParentDependency="Microsoft.Dotnet.Sdk.Internal">
       <Uri>https://github.com/dotnet/standard</Uri>
       <Sha>209c43e7f6232e7871b6927a510c25ee7dfd5c72</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Private.CoreFx.NETCoreApp" Version="4.6.0-rc1.19456.4" CoherentParentDependency="Microsoft.NETCore.App">
-      <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>3da667af759d88b683ca851694ced073e8dc9960</Sha>
+      <Uri>https://github.com/criteo-forks/corefx</Uri>
+      <Sha>b41ab8f0eba3896e0bf7b4113a9ff653ba37afb6</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App" Version="3.0.0-rc1-19456-20" CoherentParentDependency="Microsoft.Dotnet.Sdk.Internal">
       <Uri>https://github.com/dotnet/core-setup</Uri>
