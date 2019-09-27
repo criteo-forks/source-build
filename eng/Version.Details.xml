@@ -28,8 +28,8 @@
       <RepoName>linker</RepoName>
     </Dependency>
     <Dependency Name="Microsoft.NETCore.Runtime.CoreCLR" Version="3.0.0-preview8.19379.2" CoherentParentDependency="Microsoft.Private.CoreFx.NETCoreApp">
-      <Uri>https://github.com/dotnet/coreclr</Uri>
-      <Sha>ac25be694a5385a6a1496db40de932df0689b742</Sha>
+      <Uri>https://github.com/criteo-forks/coreclr</Uri>
+      <Sha>860e01083ad753fa2f5d11cb2ab13297d8189cbf</Sha>
     </Dependency>
     <Dependency Name="NETStandard.Library" Version="2.1.0-prerelease.19379.2" CoherentParentDependency="Microsoft.Dotnet.Sdk.Internal">
       <Uri>https://github.com/dotnet/standard</Uri>
