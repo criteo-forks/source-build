@@ -1,0 +1,483 @@
+From cd47f2853f041c4dc38716c6611af43c1b9e7f0d Mon Sep 17 00:00:00 2001
+From: Gregory LEOCADIE <g.leocadie@criteo.com>
+Date: Wed, 11 Sep 2019 11:40:45 +0200
+Subject: [PATCH 2/2] Add support for AES/3DES with CFB mode
+
+---
+ .../Interop.EVP.Cipher.cs                          | 30 ++++++++
+ .../opensslshim.h                                  | 20 ++++++
+ .../pal_evp_cipher.c                               | 50 ++++++++++++++
+ .../pal_evp_cipher.h                               | 80 ++++++++++++++++++++++
+ .../Internal/Cryptography/AesImplementation.OSX.cs |  3 +-
+ .../Cryptography/AesImplementation.Unix.cs         | 34 +++++----
+ .../Cryptography/AesImplementation.Windows.cs      |  3 +-
+ .../src/Internal/Cryptography/AesImplementation.cs |  2 +-
+ .../Cryptography/TripleDesImplementation.Unix.cs   |  4 ++
+ .../Security/Cryptography/SymmetricAlgorithm.cs    |  2 +-
+ 10 files changed, 212 insertions(+), 16 deletions(-)
+
+diff --git a/src/Common/src/Interop/Unix/System.Security.Cryptography.Native/Interop.EVP.Cipher.cs b/src/Common/src/Interop/Unix/System.Security.Cryptography.Native/Interop.EVP.Cipher.cs
+index 6aaadfa..39e01ee 100644
+--- a/src/Common/src/Interop/Unix/System.Security.Cryptography.Native/Interop.EVP.Cipher.cs
++++ b/src/Common/src/Interop/Unix/System.Security.Cryptography.Native/Interop.EVP.Cipher.cs
+@@ -212,6 +212,15 @@ internal static void EvpCipherSetCcmTagLength(SafeEvpCipherCtxHandle ctx, int ta
+         [DllImport(Libraries.CryptoNative, EntryPoint = "CryptoNative_EvpAes128Ccm")]
+         internal static extern IntPtr EvpAes128Ccm();
+ 
++        [DllImport(Libraries.CryptoNative, EntryPoint = "CryptoNative_EvpAes128Cfb1")]
++        internal static extern IntPtr EvpAes128Cfb1();
++
++        [DllImport(Libraries.CryptoNative, EntryPoint = "CryptoNative_EvpAes128Cfb8")]
++        internal static extern IntPtr EvpAes128Cfb8();
++
++        [DllImport(Libraries.CryptoNative, EntryPoint = "CryptoNative_EvpAes128Cfb128")]
++        internal static extern IntPtr EvpAes128Cfb128();
++
+         [DllImport(Libraries.CryptoNative, EntryPoint = "CryptoNative_EvpAes192Ecb")]
+         internal static extern IntPtr EvpAes192Ecb();
+ 
+@@ -224,6 +233,15 @@ internal static void EvpCipherSetCcmTagLength(SafeEvpCipherCtxHandle ctx, int ta
+         [DllImport(Libraries.CryptoNative, EntryPoint = "CryptoNative_EvpAes192Ccm")]
+         internal static extern IntPtr EvpAes192Ccm();
+ 
++        [DllImport(Libraries.CryptoNative, EntryPoint = "CryptoNative_EvpAes192Cfb1")]
++        internal static extern IntPtr EvpAes192Cfb1();
++
++        [DllImport(Libraries.CryptoNative, EntryPoint = "CryptoNative_EvpAes192Cfb8")]
++        internal static extern IntPtr EvpAes192Cfb8();
++
++        [DllImport(Libraries.CryptoNative, EntryPoint = "CryptoNative_EvpAes192Cfb128")]
++        internal static extern IntPtr EvpAes192Cfb128();
++
+         [DllImport(Libraries.CryptoNative, EntryPoint = "CryptoNative_EvpAes256Ecb")]
+         internal static extern IntPtr EvpAes256Ecb();
+ 
+@@ -236,6 +254,15 @@ internal static void EvpCipherSetCcmTagLength(SafeEvpCipherCtxHandle ctx, int ta
+         [DllImport(Libraries.CryptoNative, EntryPoint = "CryptoNative_EvpAes256Ccm")]
+         internal static extern IntPtr EvpAes256Ccm();
+ 
++        [DllImport(Libraries.CryptoNative, EntryPoint = "CryptoNative_EvpAes256Cfb1")]
++        internal static extern IntPtr EvpAes256Cfb1();
++
++        [DllImport(Libraries.CryptoNative, EntryPoint = "CryptoNative_EvpAes256Cfb8")]
++        internal static extern IntPtr EvpAes256Cfb8();
++
++        [DllImport(Libraries.CryptoNative, EntryPoint = "CryptoNative_EvpAes256Cfb128")]
++        internal static extern IntPtr EvpAes256Cfb128();
++
+         [DllImport(Libraries.CryptoNative, EntryPoint = "CryptoNative_EvpDesCbc")]
+         internal static extern IntPtr EvpDesCbc();
+ 
+@@ -245,6 +272,9 @@ internal static void EvpCipherSetCcmTagLength(SafeEvpCipherCtxHandle ctx, int ta
+         [DllImport(Libraries.CryptoNative, EntryPoint = "CryptoNative_EvpDes3Cbc")]
+         internal static extern IntPtr EvpDes3Cbc();
+ 
++        [DllImport(Libraries.CryptoNative, EntryPoint = "CryptoNative_EvpDes3Cfb")]
++        internal static extern IntPtr EvpDes3Cfb();
++
+         [DllImport(Libraries.CryptoNative, EntryPoint = "CryptoNative_EvpDes3Ecb")]
+         internal static extern IntPtr EvpDes3Ecb();
+ 
+diff --git a/src/Native/Unix/System.Security.Cryptography.Native/opensslshim.h b/src/Native/Unix/System.Security.Cryptography.Native/opensslshim.h
+index ed39949..ef72073 100644
+--- a/src/Native/Unix/System.Security.Cryptography.Native/opensslshim.h
++++ b/src/Native/Unix/System.Security.Cryptography.Native/opensslshim.h
+@@ -310,14 +310,23 @@ void SSL_get0_alpn_selected(const SSL* ssl, const unsigned char** protocol, unsi
+     REQUIRED_FUNCTION(EVP_aes_128_ccm) \
+     REQUIRED_FUNCTION(EVP_aes_128_ecb) \
+     REQUIRED_FUNCTION(EVP_aes_128_gcm) \
++    REQUIRED_FUNCTION(EVP_aes_128_cfb1) \
++    REQUIRED_FUNCTION(EVP_aes_128_cfb8) \
++    REQUIRED_FUNCTION(EVP_aes_128_cfb128) \
+     REQUIRED_FUNCTION(EVP_aes_192_cbc) \
+     REQUIRED_FUNCTION(EVP_aes_192_ccm) \
+     REQUIRED_FUNCTION(EVP_aes_192_ecb) \
+     REQUIRED_FUNCTION(EVP_aes_192_gcm) \
++    REQUIRED_FUNCTION(EVP_aes_192_cfb1) \
++    REQUIRED_FUNCTION(EVP_aes_192_cfb8) \
++    REQUIRED_FUNCTION(EVP_aes_192_cfb128) \
+     REQUIRED_FUNCTION(EVP_aes_256_cbc) \
+     REQUIRED_FUNCTION(EVP_aes_256_ccm) \
+     REQUIRED_FUNCTION(EVP_aes_256_ecb) \
+     REQUIRED_FUNCTION(EVP_aes_256_gcm) \
++    REQUIRED_FUNCTION(EVP_aes_256_cfb1) \
++    REQUIRED_FUNCTION(EVP_aes_256_cfb8) \
++    REQUIRED_FUNCTION(EVP_aes_256_cfb128) \
+     LEGACY_FUNCTION(EVP_CIPHER_CTX_cleanup) \
+     REQUIRED_FUNCTION(EVP_CIPHER_CTX_ctrl) \
+     FALLBACK_FUNCTION(EVP_CIPHER_CTX_free) \
+@@ -333,6 +342,7 @@ void SSL_get0_alpn_selected(const SSL* ssl, const unsigned char** protocol, unsi
+     REQUIRED_FUNCTION(EVP_des_ecb) \
+     REQUIRED_FUNCTION(EVP_des_ede3) \
+     REQUIRED_FUNCTION(EVP_des_ede3_cbc) \
++    REQUIRED_FUNCTION(EVP_des_ede3_cfb8) \
+     REQUIRED_FUNCTION(EVP_DigestFinal_ex) \
+     REQUIRED_FUNCTION(EVP_DigestInit_ex) \
+     REQUIRED_FUNCTION(EVP_DigestUpdate) \
+@@ -696,14 +706,23 @@ FOR_ALL_OPENSSL_FUNCTIONS
+ #define EVP_aes_128_ecb EVP_aes_128_ecb_ptr
+ #define EVP_aes_128_gcm EVP_aes_128_gcm_ptr
+ #define EVP_aes_128_ccm EVP_aes_128_ccm_ptr
++#define EVP_aes_128_cfb1 EVP_aes_128_cfb1_ptr
++#define EVP_aes_128_cfb8 EVP_aes_128_cfb8_ptr
++#define EVP_aes_128_cfb128 EVP_aes_128_cfb128_ptr
+ #define EVP_aes_192_cbc EVP_aes_192_cbc_ptr
+ #define EVP_aes_192_ecb EVP_aes_192_ecb_ptr
+ #define EVP_aes_192_gcm EVP_aes_192_gcm_ptr
+ #define EVP_aes_192_ccm EVP_aes_192_ccm_ptr
++#define EVP_aes_192_cfb1 EVP_aes_192_cfb1_ptr
++#define EVP_aes_192_cfb8 EVP_aes_192_cfb8_ptr
++#define EVP_aes_192_cfb128 EVP_aes_192_cfb128_ptr
+ #define EVP_aes_256_cbc EVP_aes_256_cbc_ptr
+ #define EVP_aes_256_ecb EVP_aes_256_ecb_ptr
+ #define EVP_aes_256_gcm EVP_aes_256_gcm_ptr
+ #define EVP_aes_256_ccm EVP_aes_256_ccm_ptr
++#define EVP_aes_256_cfb1 EVP_aes_256_cfb1_ptr
++#define EVP_aes_256_cfb8 EVP_aes_256_cfb8_ptr
++#define EVP_aes_256_cfb128 EVP_aes_256_cfb128_ptr
+ #define EVP_CIPHER_CTX_cleanup EVP_CIPHER_CTX_cleanup_ptr
+ #define EVP_CIPHER_CTX_ctrl EVP_CIPHER_CTX_ctrl_ptr
+ #define EVP_CIPHER_CTX_free EVP_CIPHER_CTX_free_ptr
+@@ -718,6 +737,7 @@ FOR_ALL_OPENSSL_FUNCTIONS
+ #define EVP_des_cbc EVP_des_cbc_ptr
+ #define EVP_des_ecb EVP_des_ecb_ptr
+ #define EVP_des_ede3 EVP_des_ede3_ptr
++#define EVP_des_ede3_cfb8 EVP_des_ede3_cfb8_ptr
+ #define EVP_des_ede3_cbc EVP_des_ede3_cbc_ptr
+ #define EVP_DigestFinal_ex EVP_DigestFinal_ex_ptr
+ #define EVP_DigestInit_ex EVP_DigestInit_ex_ptr
+diff --git a/src/Native/Unix/System.Security.Cryptography.Native/pal_evp_cipher.c b/src/Native/Unix/System.Security.Cryptography.Native/pal_evp_cipher.c
+index af2483f..7b672d6 100644
+--- a/src/Native/Unix/System.Security.Cryptography.Native/pal_evp_cipher.c
++++ b/src/Native/Unix/System.Security.Cryptography.Native/pal_evp_cipher.c
+@@ -191,6 +191,21 @@ const EVP_CIPHER* CryptoNative_EvpAes128Cbc()
+     return EVP_aes_128_cbc();
+ }
+ 
++const EVP_CIPHER* CryptoNative_EvpAes128Cfb1()
++{
++    return EVP_aes_128_cfb1();
++}
++
++const EVP_CIPHER* CryptoNative_EvpAes128Cfb8()
++{
++    return EVP_aes_128_cfb8();
++}
++
++const EVP_CIPHER* CryptoNative_EvpAes128Cfb128()
++{
++    return EVP_aes_128_cfb128();
++}
++
+ const EVP_CIPHER* CryptoNative_EvpAes128Gcm()
+ {
+     return EVP_aes_128_gcm();
+@@ -211,6 +226,21 @@ const EVP_CIPHER* CryptoNative_EvpAes192Cbc()
+     return EVP_aes_192_cbc();
+ }
+ 
++const EVP_CIPHER* CryptoNative_EvpAes192Cfb1()
++{
++    return EVP_aes_192_cfb1();
++}
++
++const EVP_CIPHER* CryptoNative_EvpAes192Cfb8()
++{
++    return EVP_aes_192_cfb8();
++}
++
++const EVP_CIPHER* CryptoNative_EvpAes192Cfb128()
++{
++    return EVP_aes_192_cfb128();
++}
++
+ const EVP_CIPHER* CryptoNative_EvpAes192Gcm()
+ {
+     return EVP_aes_192_gcm();
+@@ -231,6 +261,21 @@ const EVP_CIPHER* CryptoNative_EvpAes256Cbc()
+     return EVP_aes_256_cbc();
+ }
+ 
++const EVP_CIPHER* CryptoNative_EvpAes256Cfb1()
++{
++    return EVP_aes_256_cfb1();
++}
++
++const EVP_CIPHER* CryptoNative_EvpAes256Cfb8()
++{
++    return EVP_aes_256_cfb8();
++}
++
++const EVP_CIPHER* CryptoNative_EvpAes256Cfb128()
++{
++    return EVP_aes_256_cfb128();
++}
++
+ const EVP_CIPHER* CryptoNative_EvpAes256Gcm()
+ {
+     return EVP_aes_256_gcm();
+@@ -261,6 +306,11 @@ const EVP_CIPHER* CryptoNative_EvpDes3Cbc()
+     return EVP_des_ede3_cbc();
+ }
+ 
++const EVP_CIPHER* CryptoNative_EvpDes3Cfb()
++{
++    return EVP_des_ede3_cfb8();
++}
++
+ const EVP_CIPHER* CryptoNative_EvpRC2Ecb()
+ {
+     return EVP_rc2_ecb();
+diff --git a/src/Native/Unix/System.Security.Cryptography.Native/pal_evp_cipher.h b/src/Native/Unix/System.Security.Cryptography.Native/pal_evp_cipher.h
+index a0ba12a..1be9994 100644
+--- a/src/Native/Unix/System.Security.Cryptography.Native/pal_evp_cipher.h
++++ b/src/Native/Unix/System.Security.Cryptography.Native/pal_evp_cipher.h
+@@ -129,6 +129,30 @@ DLLEXPORT const EVP_CIPHER* CryptoNative_EvpAes128Ccm(void);
+ 
+ /*
+ Function:
++EvpAes128Cfb1
++
++Direct shim to EVP_aes_128_cfb1.
++*/
++const EVP_CIPHER* CryptoNative_EvpAes128Cfb1(void);
++
++/*
++Function:
++EvpAes128Cfb8
++
++Direct shim to EVP_aes_128_cfb8.
++*/
++const EVP_CIPHER* CryptoNative_EvpAes128Cfb8(void);
++
++/*
++Function:
++EvpAes128Cfb128
++
++Direct shim to EVP_aes_128_cfb128.
++*/
++const EVP_CIPHER* CryptoNative_EvpAes128Cfb128(void);
++
++/*
++Function:
+ EvpAes192Ecb
+ 
+ Direct shim to EVP_aes_192_ecb.
+@@ -161,6 +185,30 @@ DLLEXPORT const EVP_CIPHER* CryptoNative_EvpAes192Ccm(void);
+ 
+ /*
+ Function:
++EvpAes192Cfb1
++
++Direct shim to EVP_aes_192_cfb1.
++*/
++const EVP_CIPHER* CryptoNative_EvpAes192Cfb1(void);
++
++/*
++Function:
++EvpAes192Cfb8
++
++Direct shim to EVP_aes_192_cfb8.
++*/
++const EVP_CIPHER* CryptoNative_EvpAes192Cfb8(void);
++
++/*
++Function:
++EvpAes192Cfb128
++
++Direct shim to EVP_aes_192_cfb128.
++*/
++const EVP_CIPHER* CryptoNative_EvpAes192Cfb128(void);
++
++/*
++Function:
+ EvpAes256Ecb
+ 
+ Direct shim to EVP_aes_256_ecb.
+@@ -193,6 +241,30 @@ DLLEXPORT const EVP_CIPHER* CryptoNative_EvpAes256Ccm(void);
+ 
+ /*
+ Function:
++EvpAes256Cfb1
++
++Direct shim to EVP_aes_256_cfb1.
++*/
++const EVP_CIPHER* CryptoNative_EvpAes256Cfb1(void);
++
++/*
++Function:
++EvpAes256Cfb8
++
++Direct shim to EVP_aes_256_cfb8.
++*/
++const EVP_CIPHER* CryptoNative_EvpAes256Cfb8(void);
++
++/*
++Function:
++EvpAes256Cfb128
++
++Direct shim to EVP_aes_256_cfb128.
++*/
++const EVP_CIPHER* CryptoNative_EvpAes256Cfb128(void);
++
++/*
++Function:
+ EvpDes3Ecb
+ 
+ Direct shim to EVP_des_ede3.
+@@ -209,6 +281,14 @@ DLLEXPORT const EVP_CIPHER* CryptoNative_EvpDes3Cbc(void);
+ 
+ /*
+ Function:
++EvpDes3Cfb
++
++Direct shim to EVP_ede3_cfb.
++*/
++const EVP_CIPHER* CryptoNative_EvpDes3Cfb(void);
++
++/*
++Function:
+ EvpDesEcb
+ 
+ Direct shim to EVP_des_ecb.
+diff --git a/src/System.Security.Cryptography.Algorithms/src/Internal/Cryptography/AesImplementation.OSX.cs b/src/System.Security.Cryptography.Algorithms/src/Internal/Cryptography/AesImplementation.OSX.cs
+index 410e200..33c5c9c 100644
+--- a/src/System.Security.Cryptography.Algorithms/src/Internal/Cryptography/AesImplementation.OSX.cs
++++ b/src/System.Security.Cryptography.Algorithms/src/Internal/Cryptography/AesImplementation.OSX.cs
+@@ -14,7 +14,8 @@ internal partial class AesImplementation
+             byte[] key,
+             byte[] iv,
+             int blockSize,
+-            bool encrypting)
++            bool encrypting,
++            int FeedbackSize)
+         {
+             BasicSymmetricCipher cipher = new AppleCCCryptor(
+                 Interop.AppleCrypto.PAL_SymmetricAlgorithm.AES,
+diff --git a/src/System.Security.Cryptography.Algorithms/src/Internal/Cryptography/AesImplementation.Unix.cs b/src/System.Security.Cryptography.Algorithms/src/Internal/Cryptography/AesImplementation.Unix.cs
+index 9cedcc8..21c4661 100644
+--- a/src/System.Security.Cryptography.Algorithms/src/Internal/Cryptography/AesImplementation.Unix.cs
++++ b/src/System.Security.Cryptography.Algorithms/src/Internal/Cryptography/AesImplementation.Unix.cs
+@@ -15,10 +15,11 @@ internal partial class AesImplementation
+             byte[] key,
+             byte[] iv,
+             int blockSize,
+-            bool encrypting)
++            bool encrypting,
++            int FeedbackSize)
+         {
+             // The algorithm pointer is a static pointer, so not having any cleanup code is correct.
+-            IntPtr algorithm = GetAlgorithm(key.Length * 8, cipherMode);
++            IntPtr algorithm = GetAlgorithm(key.Length * 8, cipherMode, FeedbackSize);
+ 
+             BasicSymmetricCipher cipher = new OpenSslCipher(algorithm, cipherMode, blockSize, key, 0, iv, encrypting);
+             return UniversalCryptoTransform.Create(paddingMode, cipher, encrypting);
+@@ -28,31 +29,40 @@ internal partial class AesImplementation
+         // ---- PAL layer ends here ----
+         // -----------------------------
+ 
+-        private static readonly Tuple<int, CipherMode, Func<IntPtr>>[] s_algorithmInitializers =
++        private static readonly Tuple<int, CipherMode, int, Func<IntPtr>>[] s_algorithmInitializers =
+         {
+             // Neither OpenSSL nor Cng Aes support CTS mode.
+             // Cng Aes doesn't seem to support CFB mode, and that would
+             // require passing in the feedback size.  Since Windows doesn't support it,
+             // we can skip it here, too.
+-            Tuple.Create(128, CipherMode.CBC, (Func<IntPtr>)Interop.Crypto.EvpAes128Cbc),
+-            Tuple.Create(128, CipherMode.ECB, (Func<IntPtr>)Interop.Crypto.EvpAes128Ecb),
++            Tuple.Create(128, CipherMode.CBC, -1, (Func<IntPtr>)Interop.Crypto.EvpAes128Cbc),        
++            Tuple.Create(128, CipherMode.ECB, -1, (Func<IntPtr>)Interop.Crypto.EvpAes128Ecb),        
++            Tuple.Create(128, CipherMode.CFB, 1, (Func<IntPtr>)Interop.Crypto.EvpAes128Cfb1),        
++            Tuple.Create(128, CipherMode.CFB, 8, (Func<IntPtr>)Interop.Crypto.EvpAes128Cfb8),        
++            Tuple.Create(128, CipherMode.CFB, 128, (Func<IntPtr>)Interop.Crypto.EvpAes128Cfb128), 
+ 
+-            Tuple.Create(192, CipherMode.CBC, (Func<IntPtr>)Interop.Crypto.EvpAes192Cbc),
+-            Tuple.Create(192, CipherMode.ECB, (Func<IntPtr>)Interop.Crypto.EvpAes192Ecb),
++            Tuple.Create(192, CipherMode.CBC, -1,(Func<IntPtr>)Interop.Crypto.EvpAes192Cbc),
++            Tuple.Create(192, CipherMode.ECB, -1,(Func<IntPtr>)Interop.Crypto.EvpAes192Ecb),        
++            Tuple.Create(192, CipherMode.CFB, 1, (Func<IntPtr>)Interop.Crypto.EvpAes128Cfb1),        
++            Tuple.Create(192, CipherMode.CFB, 8, (Func<IntPtr>)Interop.Crypto.EvpAes128Cfb8),        
++            Tuple.Create(192, CipherMode.CFB, 128, (Func<IntPtr>)Interop.Crypto.EvpAes128Cfb128), 
+ 
+-            Tuple.Create(256, CipherMode.CBC, (Func<IntPtr>)Interop.Crypto.EvpAes256Cbc),
+-            Tuple.Create(256, CipherMode.ECB, (Func<IntPtr>)Interop.Crypto.EvpAes256Ecb),
++            Tuple.Create(256, CipherMode.CBC, -1, (Func<IntPtr>)Interop.Crypto.EvpAes256Cbc),
++            Tuple.Create(256, CipherMode.ECB, -1, (Func<IntPtr>)Interop.Crypto.EvpAes256Ecb),        
++            Tuple.Create(256, CipherMode.CFB, 1, (Func<IntPtr>)Interop.Crypto.EvpAes128Cfb1),        
++            Tuple.Create(256, CipherMode.CFB, 8, (Func<IntPtr>)Interop.Crypto.EvpAes128Cfb8),        
++            Tuple.Create(256, CipherMode.CFB, 128, (Func<IntPtr>)Interop.Crypto.EvpAes128Cfb128), 
+         };
+ 
+-        private static IntPtr GetAlgorithm(int keySize, CipherMode cipherMode)
++        private static IntPtr GetAlgorithm(int keySize, CipherMode cipherMode, int feedBackSize)
+         {
+             bool foundKeysize = false;
+ 
+             foreach (var triplet in s_algorithmInitializers)
+             {
+-                if (triplet.Item1 == keySize && triplet.Item2 == cipherMode)
++                if (triplet.Item1 == keySize && triplet.Item2 == cipherMode && (triplet.Item3 == -1 || triplet.Item3 == feedBackSize))
+                 {
+-                    return triplet.Item3();
++                    return triplet.Item4();
+                 }
+ 
+                 if (triplet.Item1 == keySize)
+diff --git a/src/System.Security.Cryptography.Algorithms/src/Internal/Cryptography/AesImplementation.Windows.cs b/src/System.Security.Cryptography.Algorithms/src/Internal/Cryptography/AesImplementation.Windows.cs
+index 0da257a..281f8aa 100644
+--- a/src/System.Security.Cryptography.Algorithms/src/Internal/Cryptography/AesImplementation.Windows.cs
++++ b/src/System.Security.Cryptography.Algorithms/src/Internal/Cryptography/AesImplementation.Windows.cs
+@@ -15,7 +15,8 @@ internal partial class AesImplementation
+             byte[] key,
+             byte[] iv,
+             int blockSize,
+-            bool encrypting)
++            bool encrypting,
++            int FeedbackSize)
+         {
+             SafeAlgorithmHandle algorithm = AesBCryptModes.GetSharedHandle(cipherMode);
+ 
+diff --git a/src/System.Security.Cryptography.Algorithms/src/Internal/Cryptography/AesImplementation.cs b/src/System.Security.Cryptography.Algorithms/src/Internal/Cryptography/AesImplementation.cs
+index 569afea..5c4614c 100644
+--- a/src/System.Security.Cryptography.Algorithms/src/Internal/Cryptography/AesImplementation.cs
++++ b/src/System.Security.Cryptography.Algorithms/src/Internal/Cryptography/AesImplementation.cs
+@@ -66,7 +66,7 @@ private ICryptoTransform CreateTransform(byte[] rgbKey, byte[] rgbIV, bool encry
+                     throw new ArgumentException(SR.Cryptography_InvalidIVSize, nameof(rgbIV));
+             }
+ 
+-            return CreateTransformCore(Mode, Padding, rgbKey, rgbIV, BlockSize / BitsPerByte, encrypting);
++            return CreateTransformCore(Mode, Padding, rgbKey, rgbIV, BlockSize / BitsPerByte, encrypting, FeedbackSize);
+         }
+ 
+         private const int BitsPerByte = 8;
+diff --git a/src/System.Security.Cryptography.Algorithms/src/Internal/Cryptography/TripleDesImplementation.Unix.cs b/src/System.Security.Cryptography.Algorithms/src/Internal/Cryptography/TripleDesImplementation.Unix.cs
+index 3993cc7..5cf71e2 100644
+--- a/src/System.Security.Cryptography.Algorithms/src/Internal/Cryptography/TripleDesImplementation.Unix.cs
++++ b/src/System.Security.Cryptography.Algorithms/src/Internal/Cryptography/TripleDesImplementation.Unix.cs
+@@ -27,6 +27,10 @@ partial class TripleDesImplementation
+                 case CipherMode.ECB:
+                     algorithm = Interop.Crypto.EvpDes3Ecb();
+                     break;
++                case CipherMode.CFB:
++                    algorithm = Interop.Crypto.EvpDes3Cfb();
++                    break;
++
+                 default:
+                     throw new NotSupportedException();
+             }
+diff --git a/src/System.Security.Cryptography.Primitives/src/System/Security/Cryptography/SymmetricAlgorithm.cs b/src/System.Security.Cryptography.Primitives/src/System/Security/Cryptography/SymmetricAlgorithm.cs
+index 60e6326..5cb00e0 100644
+--- a/src/System.Security.Cryptography.Primitives/src/System/Security/Cryptography/SymmetricAlgorithm.cs
++++ b/src/System.Security.Cryptography.Primitives/src/System/Security/Cryptography/SymmetricAlgorithm.cs
+@@ -144,7 +144,7 @@ public virtual CipherMode Mode
+ 
+             set
+             {
+-                if (!(value == CipherMode.CBC || value == CipherMode.ECB))
++                if (!(value == CipherMode.CBC || value == CipherMode.ECB || value == CipherMode.CFB))
+                     throw new CryptographicException(SR.Cryptography_InvalidCipherMode);
+ 
+                 ModeValue = value;
+-- 
+1.8.3.1
+

@@ -1,0 +1,148 @@
+From 8fb9e0cdd3eb0c920292e48f35ac04c44a82946e Mon Sep 17 00:00:00 2001
+From: Gregory LEOCADIE <g.leocadie@criteo.com>
+Date: Thu, 26 Sep 2019 11:43:18 +0200
+Subject: [PATCH 1/2] Get the physical memory usage from memory.stat instead of
+ memory.usage_in_bytes
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+memory.usage_in_bytes counts rss + cache. We would like only the RSS
+which accounts for the current RAM usage.
+---
+ src/gc/unix/cgroup.cpp      | 38 +++++++++++++++++++++++++++++---------
+ src/pal/src/misc/cgroup.cpp | 39 ++++++++++++++++++++++++++++++---------
+ 2 files changed, 59 insertions(+), 18 deletions(-)
+
+diff --git a/src/gc/unix/cgroup.cpp b/src/gc/unix/cgroup.cpp
+index f81f14d..4ccf3c5 100644
+--- a/src/gc/unix/cgroup.cpp
++++ b/src/gc/unix/cgroup.cpp
+@@ -35,7 +35,7 @@ Abstract:
+ #define PROC_CGROUP_FILENAME "/proc/self/cgroup"
+ #define PROC_STATM_FILENAME "/proc/self/statm"
+ #define MEM_LIMIT_FILENAME "/memory.limit_in_bytes"
+-#define MEM_USAGE_FILENAME "/memory.usage_in_bytes"
++#define MEM_STAT_FILENAME "/memory.stat"
+ #define CFS_QUOTA_FILENAME "/cpu.cfs_quota_us"
+ #define CFS_PERIOD_FILENAME "/cpu.cfs_period_us"
+ 
+@@ -79,22 +79,42 @@ public:
+ 
+     static bool GetPhysicalMemoryUsage(size_t *val)
+     {
+-        char *mem_usage_filename = nullptr;
++        char *mem_stat_filename = nullptr;
+         bool result = false;
+ 
+         if (s_memory_cgroup_path == nullptr)
+             return result;
+ 
+         size_t len = strlen(s_memory_cgroup_path);
+-        len += strlen(MEM_USAGE_FILENAME);
+-        mem_usage_filename = (char*)malloc(len+1);
+-        if (mem_usage_filename == nullptr)
++        len += strlen(MEM_STAT_FILENAME);
++        mem_stat_filename = (char*)malloc(len+1);
++        if (mem_stat_filename == nullptr)
+             return result;
+ 
+-        strcpy(mem_usage_filename, s_memory_cgroup_path);
+-        strcat(mem_usage_filename, MEM_USAGE_FILENAME);
+-        result = ReadMemoryValueFromFile(mem_usage_filename, val);
+-        free(mem_usage_filename);
++        strcpy(mem_stat_filename, s_memory_cgroup_path);
++        strcat(mem_stat_filename, MEM_STAT_FILENAME);
++
++        FILE* file = fopen(mem_stat_filename, "r");
++        if (file != nullptr)
++        {
++            char* line = nullptr;
++            size_t linelen;
++            while (getline(&line, &linelen, file) != -1)
++            {
++                size_t available;
++                int fieldsParsed = sscanf(line, "rss %zu" , &available);
++                if (fieldsParsed >= 1)
++                {
++                    *val = available;
++                    result = true;
++                    break;
++                }
++            }
++            free(line);
++            fclose(file);
++        }
++
++        free(mem_stat_filename);
+         return result;
+     }
+ 
+diff --git a/src/pal/src/misc/cgroup.cpp b/src/pal/src/misc/cgroup.cpp
+index 2018df4..c7fdd71 100644
+--- a/src/pal/src/misc/cgroup.cpp
++++ b/src/pal/src/misc/cgroup.cpp
+@@ -24,7 +24,7 @@ SET_DEFAULT_DEBUG_CHANNEL(MISC);
+ #define PROC_CGROUP_FILENAME "/proc/self/cgroup"
+ #define PROC_STATM_FILENAME "/proc/self/statm"
+ #define MEM_LIMIT_FILENAME "/memory.limit_in_bytes"
+-#define MEM_USAGE_FILENAME "/memory.usage_in_bytes"
++#define MEM_STAT_FILENAME "/memory.stat"
+ #define CFS_QUOTA_FILENAME "/cpu.cfs_quota_us"
+ #define CFS_PERIOD_FILENAME "/cpu.cfs_period_us"
+ class CGroup
+@@ -67,22 +67,43 @@ public:
+ 
+     static bool GetPhysicalMemoryUsage(size_t *val)
+     {
+-        char *mem_usage_filename = nullptr;
++        char *mem_stat_filename = nullptr;
+         bool result = false;
+ 
+         if (s_memory_cgroup_path == nullptr)
+             return result;
+ 
+         size_t len = strlen(s_memory_cgroup_path);
+-        len += strlen(MEM_USAGE_FILENAME);
+-        mem_usage_filename = (char*)malloc(len+1);
+-        if (mem_usage_filename == nullptr)
++        len += strlen(MEM_STAT_FILENAME);
++        mem_stat_filename = (char*)PAL_malloc(len+1);
++        if (mem_stat_filename == nullptr)
+             return result;
+ 
+-        strcpy(mem_usage_filename, s_memory_cgroup_path);
+-        strcat(mem_usage_filename, MEM_USAGE_FILENAME);
+-        result = ReadMemoryValueFromFile(mem_usage_filename, val);
+-        free(mem_usage_filename);
++        strcpy(mem_stat_filename, s_memory_cgroup_path);
++        strcat(mem_stat_filename, MEM_STAT_FILENAME);
++
++        FILE* file = fopen(mem_stat_filename, "r");
++        if (file != nullptr)
++        {
++            char* line = nullptr;
++            size_t linelen;
++            while (getline(&line, &linelen, file) != -1)
++            {
++                size_t available;
++                int fieldsParsed = sscanf_s(line, "rss %zu" , &available);
++                if (fieldsParsed >= 1)
++                {
++                    *val = available;
++                    result = true;
++                    break;
++                }
++            }
++            free(line);
++            fclose(file);
++        }
++
++        PAL_free(mem_stat_filename);
++
+         return result;
+     }
+ 
+-- 
+1.8.3.1
+
