@@ -16,7 +16,7 @@ index 6efbd39..742476a 100644
      <MinorVersion>1</MinorVersion>
      <PatchVersion>0</PatchVersion>
 -    <PreReleaseVersionLabel>rtm</PreReleaseVersionLabel>
-+    <PreReleaseVersionLabel>criteo2</PreReleaseVersionLabel>
++    <PreReleaseVersionLabel>criteo3</PreReleaseVersionLabel>
      <!-- Enable to remove prerelease label. -->
 -    <StabilizePackageVersion Condition="'$(StabilizePackageVersion)' == ''">true</StabilizePackageVersion>
 +    <StabilizePackageVersion>false</StabilizePackageVersion>
